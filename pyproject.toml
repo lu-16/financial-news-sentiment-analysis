@@ -2,7 +2,7 @@
 name = "financial-news-sentiment-analysis"
 version = "0.1.0"
 description = "Financial news sentiment analysis with Claude AI"
-requires-python = ">=3.9"
+requires-python = ">=3.13"
 dependencies = [
     "streamlit>=1.35.0",
     "python-dotenv>=1.0.0",

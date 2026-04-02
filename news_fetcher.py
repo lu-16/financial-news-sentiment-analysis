@@ -1,4 +1,3 @@
-import random
 import urllib.parse
 from datetime import datetime, timezone, timedelta
 
@@ -44,8 +43,5 @@ def fetch_articles(keywords: list[str], hours_back: int = 2) -> list[dict]:
             "description": entry.get("summary", "")[:300],
             "published_at": entry.get("published", ""),
         })
-
-    if len(articles) > 10:
-        articles = random.sample(articles, 10)
 
     return articles

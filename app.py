@@ -20,6 +20,17 @@ st.set_page_config(
 st.title("📰 Financial News Sentiment Analyzer")
 st.caption("Enter keywords to fetch recent global news and analyze sentiment with OpenAI.")
 
+# ── Password gate ─────────────────────────────────────────────────────────────
+if not st.session_state.get("authenticated"):
+    pwd = st.text_input("Password", type="password")
+    if st.button("Enter"):
+        if pwd == st.secrets.get("APP_PASSWORD", ""):
+            st.session_state["authenticated"] = True
+            st.rerun()
+        else:
+            st.error("Incorrect password.")
+    st.stop()
+
 # ── Input form ──────────────────────────────────────────────────────────────
 with st.form("input_form"):
     keywords_input = st.text_input(
@@ -29,7 +40,7 @@ with st.form("input_form"):
     )
     email_input = st.text_input(
         "Send report to email (optional)",
-        value="luluvivify@gmail.com",
+        value="hauwen95.huang@gmail.com",
         placeholder="you@example.com",
     )
     col_left, col_right = st.columns([1, 4])
