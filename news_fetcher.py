@@ -12,8 +12,9 @@ def fetch_articles(keywords: list[str], hours_back: int = 2) -> list[dict]:
     Returns a list of article dicts with keys:
         title, source, url, description, published_at
     """
-    # `when:Xh` tells Google News to limit results to the last X hours
-    query = " OR ".join(keywords) + f" when:{hours_back}h"
+    # `when:Xh` tells Google News to limit results to the last X hours (must be an integer)
+    when_hours = max(1, int(hours_back))
+    query = " OR ".join(keywords) + f" when:{when_hours}h"
     encoded = urllib.parse.quote(query)
     url = f"https://news.google.com/rss/search?q={encoded}&hl=en-US&gl=US&ceid=US:en"
 

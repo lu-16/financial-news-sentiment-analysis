@@ -4,11 +4,19 @@ A Streamlit web app that fetches recent financial news from Google News and clas
 
 ## Features
 
-- **Keyword search** — enter one or more comma-separated keywords; articles from the past 2 hours are fetched via Google News RSS (no API key required)
-- **Batch sentiment analysis** — all articles are sent to OpenAI in a single call; each article gets a `positive / negative / neutral` label, a confidence score, and a one-sentence reasoning
+- **Password gate** — app is protected by a configurable login password (`APP_PASSWORD`)
+- **Keyword search** — enter one or more comma-separated keywords; news is fetched via Google News RSS (no API key required)
+- **Configurable time window** — fetch articles from the last 30 min, 1 hr, 2 hr, 6 hr, 12 hr, or 24 hr
+- **Portfolio positions** — enter your current positions (e.g. `Long AAPL 100 shares`, `Short BTC`) in the sidebar; tickers are automatically extracted and added to the keyword search
+- **Batch sentiment analysis** — all articles are sent to OpenAI in a single call; each article gets:
+  - `positive / negative / neutral` label with a confidence score and one-sentence reasoning
+  - **Impact horizon** — `short-term`, `long-term`, or `both`
+  - **Price impact estimate** — estimated % price move based on historical analogues
+- **Portfolio impact analysis** — when positions are provided, each article is classified as `beneficial`, `detrimental`, or `unrelated` to your portfolio, with reasoning
+- **Hide unrelated articles** — sidebar checkbox to filter out articles irrelevant to your positions
 - **Interactive charts** — sentiment distribution pie chart and confidence score box plot side by side
-- **Article table** — sortable table with clickable article links
-- **Email report** — optional HTML email sent via Gmail SMTP
+- **Article table** — sortable table with clickable links; shows portfolio impact columns when positions are set
+- **Email report** — optional HTML email sent via Gmail SMTP, including portfolio impact section when positions are provided
 
 ## Prerequisites
 
@@ -74,11 +82,13 @@ financial-news-sentiment-analysis/
 
 ## How It Works
 
-1. **News fetching** (`news_fetcher.py`) — constructs a Google News RSS query using `feedparser`, filters articles to those published within the last 2 hours, and returns title, source, URL, description, and publish time.
+1. **News fetching** (`news_fetcher.py`) — constructs a Google News RSS query using `feedparser`, filters articles to those published within the selected time window, and returns title, source, URL, description, and publish time.
 
-2. **Sentiment analysis** (`sentiment_analyzer.py`) — batches all article titles and summaries into a single prompt sent to `gpt-4o-mini`. The model returns a JSON array; each item has `index`, `sentiment`, `score`, and `reasoning`. Falls back to `neutral / 0.5` if parsing fails.
+2. **Keyword enrichment** (`app.py`) — if portfolio positions are entered in the sidebar, ticker symbols are extracted automatically (e.g. `AAPL`, `BTC`) and merged into the keyword list so relevant news is always fetched.
 
-3. **Email report** (`email_sender.py`) — builds a responsive HTML email with a summary header (positive / negative / neutral counts) and a per-article table. Sent via Gmail SMTP with STARTTLS on port 587.
+3. **Sentiment analysis** (`sentiment_analyzer.py`) — batches all article titles and summaries into a single prompt sent to `gpt-4o-mini`. Without positions, the model returns `sentiment`, `score`, `reasoning`, `impact_horizon`, and `price_impact_estimate` per article. With positions, it additionally returns `portfolio_impact` (`beneficial` / `detrimental` / `unrelated`) and `impact_reasoning`. Falls back to `neutral / 0.5` if parsing fails.
+
+4. **Email report** (`email_sender.py`) — builds a responsive HTML email with a summary header (positive / negative / neutral counts), a portfolio positions block (when provided), and a per-article table including horizon, price impact, and portfolio impact columns. Sent via Gmail SMTP with STARTTLS on port 587.
 
 ## Dependencies
 
@@ -94,6 +104,6 @@ financial-news-sentiment-analysis/
 
 ## Notes
 
-- Google News RSS is free and requires no API key, but article availability within the 2-hour window depends on Google's indexing speed.
+- Google News RSS is free and requires no API key, but article availability within short time windows depends on Google's indexing speed.
 - The OpenAI call is billed per token. A typical batch of 20–30 short articles costs a fraction of a cent with `gpt-4o-mini`.
 - The Gmail App Password is separate from your account password and can be revoked independently at [myaccount.google.com/apppasswords](https://myaccount.google.com/apppasswords).

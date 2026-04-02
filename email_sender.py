@@ -15,12 +15,19 @@ _SENTIMENT_COLORS = {
     "neutral": "#6c757d",
 }
 
+_IMPACT_COLORS = {
+    "beneficial": "#28a745",
+    "detrimental": "#dc3545",
+    "unrelated": "#6c757d",
+}
+
 
 def send_report(
     recipient_email: str,
     keywords: list[str],
     articles: list[dict],
     summary: dict,
+    positions: list[str] | None = None,
 ) -> bool:
     """
     Send an HTML sentiment report email via Gmail SMTP.
@@ -36,7 +43,7 @@ def send_report(
     keywords_str = ", ".join(keywords)
     subject = f"News Sentiment Report: {keywords_str} — {timestamp}"
 
-    html_body = _build_html(keywords, articles, summary, timestamp)
+    html_body = _build_html(keywords, articles, summary, timestamp, positions=positions)
 
     msg = MIMEMultipart("alternative")
     msg["Subject"] = subject
@@ -61,6 +68,7 @@ def _build_html(
     articles: list[dict],
     summary: dict,
     timestamp: str,
+    positions: list[str] | None = None,
 ) -> str:
     keywords_str = ", ".join(keywords)
     pos = summary.get("positive", 0)
@@ -72,6 +80,21 @@ def _build_html(
         color = _SENTIMENT_COLORS.get(a.get("sentiment", "neutral"), "#6c757d")
         sentiment_label = a.get("sentiment", "neutral").capitalize()
         score_pct = f"{a.get('score', 0.5):.0%}"
+        horizon = a.get("impact_horizon", "")
+        price_est = a.get("price_impact_estimate", "N/A")
+        impact_cells = ""
+        if positions:
+            impact = a.get("portfolio_impact", "unrelated")
+            impact_color = _IMPACT_COLORS.get(impact, "#6c757d")
+            impact_label = impact.capitalize()
+            impact_reasoning = a.get("impact_reasoning", "")
+            impact_cells = f"""
+          <td style="padding:8px;border-bottom:1px solid #eee;">
+            <span style="background:{impact_color};color:#fff;padding:2px 8px;border-radius:4px;font-size:12px;">
+              {impact_label}
+            </span>
+          </td>
+          <td style="padding:8px;border-bottom:1px solid #eee;color:#555;font-size:13px;">{impact_reasoning}</td>"""
         rows += f"""
         <tr>
           <td style="padding:8px;border-bottom:1px solid #eee;">
@@ -84,13 +107,29 @@ def _build_html(
             </span>
           </td>
           <td style="padding:8px;border-bottom:1px solid #eee;text-align:center;">{score_pct}</td>
-          <td style="padding:8px;border-bottom:1px solid #eee;color:#555;font-size:13px;">{a.get('reasoning','')}</td>
+          <td style="padding:8px;border-bottom:1px solid #eee;color:#555;text-align:center;">{horizon}</td>
+          <td style="padding:8px;border-bottom:1px solid #eee;color:#555;text-align:center;">{price_est}</td>
+          <td style="padding:8px;border-bottom:1px solid #eee;color:#555;font-size:13px;">{a.get('reasoning','')}</td>{impact_cells}
         </tr>"""
+
+    positions_block = ""
+    if positions:
+        positions_str = " &nbsp;|&nbsp; ".join(positions)
+        positions_block = f"""
+  <div style="background:#f0f4ff;border-left:4px solid #4a6cf7;padding:12px 16px;border-radius:4px;margin-bottom:20px;">
+    <strong>Positions analyzed:</strong> {positions_str}
+  </div>"""
+
+    impact_headers = ""
+    if positions:
+        impact_headers = """
+        <th style="padding:10px 8px;text-align:left;border-bottom:2px solid #dee2e6;">Portfolio Impact</th>
+        <th style="padding:10px 8px;text-align:left;border-bottom:2px solid #dee2e6;">Impact Reasoning</th>"""
 
     return f"""<!DOCTYPE html>
 <html>
 <head><meta charset="UTF-8"></head>
-<body style="font-family:Arial,sans-serif;max-width:900px;margin:0 auto;padding:20px;color:#333;">
+<body style="font-family:Arial,sans-serif;max-width:1000px;margin:0 auto;padding:20px;color:#333;">
 
   <div style="background:#1a1a2e;color:#fff;padding:24px;border-radius:8px;margin-bottom:24px;">
     <h1 style="margin:0;font-size:22px;">News Sentiment Report</h1>
@@ -111,7 +150,7 @@ def _build_html(
       <div style="color:#383d41;">Neutral</div>
     </div>
   </div>
-
+{positions_block}
   <h2 style="font-size:16px;margin-bottom:12px;">Article Details ({len(articles)} articles)</h2>
   <table style="width:100%;border-collapse:collapse;font-size:14px;">
     <thead>
@@ -120,7 +159,9 @@ def _build_html(
         <th style="padding:10px 8px;text-align:left;border-bottom:2px solid #dee2e6;">Source</th>
         <th style="padding:10px 8px;text-align:left;border-bottom:2px solid #dee2e6;">Sentiment</th>
         <th style="padding:10px 8px;text-align:center;border-bottom:2px solid #dee2e6;">Confidence</th>
-        <th style="padding:10px 8px;text-align:left;border-bottom:2px solid #dee2e6;">Reasoning</th>
+        <th style="padding:10px 8px;text-align:center;border-bottom:2px solid #dee2e6;">Horizon</th>
+        <th style="padding:10px 8px;text-align:center;border-bottom:2px solid #dee2e6;">Price Impact</th>
+        <th style="padding:10px 8px;text-align:left;border-bottom:2px solid #dee2e6;">Reasoning</th>{impact_headers}
       </tr>
     </thead>
     <tbody>{rows}</tbody>

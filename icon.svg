@@ -1,0 +1,63 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+
+  <!-- Background -->
+  <rect width="512" height="512" rx="88" fill="#F6F3EE"/>
+
+  <!-- Big bold trend line as the hero — sweeps across the whole canvas -->
+  <path d="M 40 420 C 80 400, 120 370, 160 340 S 220 290, 270 250 S 340 190, 400 148 S 450 118, 480 100"
+        fill="none" stroke="#1C1C1C" stroke-width="7" stroke-linecap="round"/>
+
+  <!-- Filled area under curve -->
+  <path d="M 40 420 C 80 400, 120 370, 160 340 S 220 290, 270 250 S 340 190, 400 148 S 450 118, 480 100 L 480 480 L 40 480 Z"
+        fill="#1C1C1C" opacity="0.05"/>
+
+  <!-- Three BIG sentiment faces sitting ON the trend line -->
+
+  <!-- Face 1: worried/negative — bottom left of the arc -->
+  <circle cx="148" cy="344" r="58" fill="#FDECEA" stroke="#1C1C1C" stroke-width="4"/>
+  <!-- eyes with slight worry slant -->
+  <ellipse cx="133" cy="335" rx="4" ry="5" fill="#1C1C1C"/>
+  <ellipse cx="163" cy="335" rx="4" ry="5" fill="#1C1C1C"/>
+  <!-- frown -->
+  <path d="M 132 358 Q 148 347 164 358" stroke="#1C1C1C" stroke-width="3.5" fill="none" stroke-linecap="round"/>
+  <!-- worry brow -->
+  <path d="M 128 322 Q 133 317 140 320" stroke="#1C1C1C" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+  <path d="M 156 320 Q 163 317 168 322" stroke="#1C1C1C" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+
+  <!-- Face 2: neutral — midpoint -->
+  <circle cx="272" cy="248" r="58" fill="#EEF4FB" stroke="#1C1C1C" stroke-width="4"/>
+  <ellipse cx="257" cy="239" rx="4" ry="5" fill="#1C1C1C"/>
+  <ellipse cx="287" cy="239" rx="4" ry="5" fill="#1C1C1C"/>
+  <line x1="255" y1="260" x2="289" y2="260" stroke="#1C1C1C" stroke-width="3.5" stroke-linecap="round"/>
+
+  <!-- Face 3: happy — top right of the arc -->
+  <circle cx="396" cy="152" r="58" fill="#E8F8F3" stroke="#1C1C1C" stroke-width="4"/>
+  <ellipse cx="381" cy="143" rx="4" ry="5" fill="#1C1C1C"/>
+  <ellipse cx="411" cy="143" rx="4" ry="5" fill="#1C1C1C"/>
+  <!-- big smile -->
+  <path d="M 378 162 Q 396 178 414 162" stroke="#1C1C1C" stroke-width="3.5" fill="none" stroke-linecap="round"/>
+  <!-- rosy cheeks -->
+  <circle cx="374" cy="166" r="8" fill="#F5A0A0" opacity="0.45"/>
+  <circle cx="418" cy="166" r="8" fill="#F5A0A0" opacity="0.45"/>
+
+  <!-- Small upward arrow at end of line -->
+  <path d="M 480 100 L 468 114 M 480 100 L 466 96"
+        stroke="#1C1C1C" stroke-width="5" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+
+  <!-- Tiny candlestick hint, bottom right, small and decorative -->
+  <line x1="58" y1="456" x2="58" y2="468" stroke="#9E9E9E" stroke-width="1.5" stroke-linecap="round"/>
+  <rect x="53" y="458" width="10" height="7" rx="2" fill="#E8574A" opacity="0.7"/>
+
+  <line x1="80" y1="450" x2="80" y2="464" stroke="#9E9E9E" stroke-width="1.5" stroke-linecap="round"/>
+  <rect x="75" y="452" width="10" height="7" rx="2" fill="#4ABFA8" opacity="0.7"/>
+
+  <line x1="102" y1="446" x2="102" y2="460" stroke="#9E9E9E" stroke-width="1.5" stroke-linecap="round"/>
+  <rect x="97" y="448" width="10" height="7" rx="2" fill="#4ABFA8" opacity="0.7"/>
+
+  <line x1="124" y1="440" x2="124" y2="454" stroke="#9E9E9E" stroke-width="1.5" stroke-linecap="round"/>
+  <rect x="119" y="442" width="10" height="7" rx="2" fill="#4ABFA8" opacity="0.7"/>
+
+  <line x1="146" y1="436" x2="146" y2="450" stroke="#9E9E9E" stroke-width="1.5" stroke-linecap="round"/>
+  <rect x="141" y="438" width="10" height="7" rx="2" fill="#E8574A" opacity="0.7"/>
+
+</svg>
