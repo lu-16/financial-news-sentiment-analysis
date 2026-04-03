@@ -19,36 +19,6 @@ uv remove <package>
 
 Dependencies are declared in `pyproject.toml`. The lockfile is `uv.lock`.
 
-## Running the App
-
-```bash
-uv run streamlit run app.py
-```
-
-## Environment Variables
-
-### Local development
-
-Copy `.env.example` to `.env` and fill in the values:
-
-| Variable | Description |
-|---|---|
-| `OPENAI_API_KEY` | OpenAI API key — used for sentiment classification |
-| `GMAIL_USER` | Gmail address used to send reports |
-| `GMAIL_APP_PASSWORD` | Gmail App Password (not your regular password) |
-
-Generate a Gmail App Password at <https://myaccount.google.com/apppasswords> (requires 2FA enabled).
-
-### Streamlit Cloud / password gate
-
-To enable the app's password gate, set `APP_PASSWORD` in `.streamlit/secrets.toml`:
-
-```toml
-APP_PASSWORD = "yourpassword"
-```
-
-Leave it unset (or omit the key) to disable the password gate entirely.
-
 ## Git Conventions
 
 - All commit messages, PR titles, and descriptions must be in English.
