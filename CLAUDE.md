@@ -1,5 +1,7 @@
 # Financial News Sentiment Analyzer
 
+Streamlit app that fetches financial news from Google News RSS, classifies sentiment with OpenAI (`gpt-4o-mini`), and emails a report via Gmail SMTP.
+
 ## Package Management
 
 This project uses **uv**. Do not use pip or manually manage `.venv`.
@@ -25,14 +27,42 @@ uv run streamlit run app.py
 
 ## Environment Variables
 
-Copy `.env.example` to `.env` and fill in all three values before running:
+### Local development
+
+Copy `.env.example` to `.env` and fill in the values:
 
 | Variable | Description |
 |---|---|
-| `OPENAI_API_KEY` | OpenAI API key |
+| `OPENAI_API_KEY` | OpenAI API key — used for sentiment classification |
 | `GMAIL_USER` | Gmail address used to send reports |
 | `GMAIL_APP_PASSWORD` | Gmail App Password (not your regular password) |
 
-News is fetched from Google News RSS — no API key required.
-
 Generate a Gmail App Password at <https://myaccount.google.com/apppasswords> (requires 2FA enabled).
+
+### Streamlit Cloud / password gate
+
+To enable the app's password gate, set `APP_PASSWORD` in `.streamlit/secrets.toml`:
+
+```toml
+APP_PASSWORD = "yourpassword"
+```
+
+Leave it unset (or omit the key) to disable the password gate entirely.
+
+## Git Conventions
+
+- All commit messages, PR titles, and descriptions must be in English.
+- Use [Conventional Commits](https://www.conventionalcommits.org/) format:
+
+  | Prefix | When to use | Version bump |
+  | --- | --- | --- |
+  | `fix:` | Bug fixes | patch |
+  | `feat:` | New features | minor |
+  | `feat!:` / `BREAKING CHANGE` footer | Incompatible changes (removed feature, changed CLI args, switched API provider) | major |
+  | `docs:`, `chore:`, `refactor:`, `test:` | Everything else | none |
+
+- Run `./bump-version.sh` to auto-tag based on commits since the last tag.
+
+## Documentation
+
+When making changes that affect usage, setup, workflow, or features, update `README.md` before committing.

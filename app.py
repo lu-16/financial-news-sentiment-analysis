@@ -22,7 +22,7 @@ def _parse_positions(raw: str) -> list[str]:
 def _tickers_from_positions(positions: list[str]) -> list[str]:
     tickers = []
     for p in positions:
-        tickers.extend(re.findall(r'\b[A-Z]{2,5}\b', p))
+        tickers.extend(t.upper() for t in re.findall(r'\b[A-Za-z]{2,5}\b', p))
     return [t for t in dict.fromkeys(tickers) if t not in _POSITION_KEYWORDS]
 
 st.set_page_config(
@@ -32,36 +32,30 @@ st.set_page_config(
 )
 
 st.title(":newspaper: Financial News Sentiment Analyzer")
-st.caption("Enter keywords to fetch recent global news and analyze sentiment with OpenAI.")
 
 # ── Password gate ─────────────────────────────────────────────────────────────
-if not st.session_state.get("authenticated"):
+_app_password = st.secrets.get("APP_PASSWORD", "")
+if _app_password and not st.session_state.get("authenticated"):
     pwd = st.text_input("Password", type="password")
     if st.button("Enter"):
-        if pwd == st.secrets.get("APP_PASSWORD", ""):
+        if pwd == _app_password:
             st.session_state["authenticated"] = True
             st.rerun()
         else:
             st.error("Incorrect password.")
     st.stop()
 
-# ── Sidebar: positions ────────────────────────────────────────────────────────
-st.sidebar.header("My Positions")
-st.sidebar.caption("One per line, e.g.: Long AAPL 100 shares")
-positions_raw = st.sidebar.text_area(
+# ── Positions ────────────────────────────────────────────────────────────────
+st.subheader("My Positions")
+st.caption("One per line, e.g.: Long AAPL 100 shares")
+positions_raw = st.text_area(
     "Positions",
     value=st.session_state.get("positions_raw", ""),
-    height=160,
+    height=120,
     placeholder="Long AAPL 100 shares\nShort BTC\nLong NVDA 50 shares",
     label_visibility="collapsed",
 )
 st.session_state["positions_raw"] = positions_raw
-
-hide_unrelated = st.sidebar.checkbox(
-    "Hide unrelated articles",
-    value=st.session_state.get("hide_unrelated", True),
-)
-st.session_state["hide_unrelated"] = hide_unrelated
 
 # ── Input form ──────────────────────────────────────────────────────────────
 _INTERVAL_OPTIONS = {
@@ -74,11 +68,6 @@ _INTERVAL_OPTIONS = {
 }
 
 with st.form("input_form"):
-    keywords_input = st.text_input(
-        "Keywords (comma-separated)",
-        value="bitcoin",
-        placeholder="e.g. bitcoin, fed rate, apple, nvidia",
-    )
     interval_label = st.selectbox(
         "News time window",
         options=list(_INTERVAL_OPTIONS.keys()),
@@ -89,23 +78,22 @@ with st.form("input_form"):
         value="hauwen95.huang@gmail.com",
         placeholder="you@example.com",
     )
+    hide_unrelated = st.checkbox(
+        "Hide unrelated articles",
+        value=st.session_state.get("hide_unrelated", True),
+    )
+    st.session_state["hide_unrelated"] = hide_unrelated
     col_left, col_right = st.columns([1, 4])
     with col_left:
         submitted = st.form_submit_button("Analyze", width='stretch', type="primary")
 
 # ── On submit ────────────────────────────────────────────────────────────────
 if submitted:
-    keywords = [k.strip() for k in keywords_input.split(",") if k.strip()]
     positions = _parse_positions(st.session_state.get("positions_raw", ""))
-
-    # Auto-merge tickers extracted from positions into keywords
-    if positions:
-        for t in _tickers_from_positions(positions):
-            if t.lower() not in [k.lower() for k in keywords]:
-                keywords.append(t)
+    keywords = _tickers_from_positions(positions)
 
     if not keywords:
-        st.warning("Please enter at least one keyword or add positions in the sidebar.")
+        st.warning("Please add at least one position above.")
         st.stop()
 
     # Clear previous results
@@ -169,15 +157,18 @@ if "results" in st.session_state:
     keywords = st.session_state["keywords"]
     positions = st.session_state.get("positions", [])
 
-    # Apply unrelated filter if requested
-    hide_unrelated = st.session_state.get("hide_unrelated", False)
-    display_articles = (
-        [a for a in analyzed if a.get("portfolio_impact") != "unrelated"]
-        if hide_unrelated and positions
-        else analyzed
-    )
+    display_articles = analyzed
 
     st.divider()
+
+    hide_unrelated = st.session_state.get("hide_unrelated", True)
+    if positions:
+        display_articles = (
+            [a for a in analyzed if a.get("portfolio_impact") != "unrelated"]
+            if hide_unrelated
+            else analyzed
+        )
+
     hidden_count = len(analyzed) - len(display_articles)
     subtitle = f"Results for: `{', '.join(keywords)}`  ({len(display_articles)} articles"
     if hidden_count:
@@ -235,19 +226,22 @@ if "results" in st.session_state:
             {"Sentiment": a["sentiment"].capitalize(), "Confidence": a["score"]}
             for a in display_articles
         ])
-        fig_box = px.box(
-            df_scores,
-            x="Sentiment",
-            y="Confidence",
-            color="Sentiment",
-            color_discrete_map={
-                "Positive": "#28a745",
-                "Negative": "#dc3545",
-                "Neutral": "#6c757d",
-            },
-            title="Confidence Score Distribution",
-        )
-        st.plotly_chart(fig_box, width='stretch')
+        if df_scores.empty:
+            st.info("No articles to display confidence scores for.")
+        else:
+            fig_box = px.box(
+                df_scores,
+                x="Sentiment",
+                y="Confidence",
+                color="Sentiment",
+                color_discrete_map={
+                    "Positive": "#28a745",
+                    "Negative": "#dc3545",
+                    "Neutral": "#6c757d",
+                },
+                title="Confidence Score Distribution",
+            )
+            st.plotly_chart(fig_box, width='stretch')
 
     # Article table
     st.subheader("Article Details")
